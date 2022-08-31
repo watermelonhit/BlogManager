@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.article.mapper.MsArticleMapper">
+    
+    <resultMap type="MsArticle" id="MsArticleResult">
+        <result property="id"    column="id"    />
+        <result property="commentCounts"    column="comment_counts"    />
+        <result property="createDate"    column="create_date"    />
+        <result property="summary"    column="summary"    />
+        <result property="title"    column="title"    />
+        <result property="viewCounts"    column="view_counts"    />
+        <result property="weight"    column="weight"    />
+        <result property="authorId"    column="author_id"    />
+        <result property="bodyId"    column="body_id"    />
+        <result property="categoryId"    column="category_id"    />
+    </resultMap>
+
+    <resultMap id="MsArticleMsArticleBodyResult" type="MsArticle" extends="MsArticleResult">
+        <collection property="msArticleBodyList" notNullColumn="sub_id" javaType="java.util.List" resultMap="MsArticleBodyResult" />
+    </resultMap>
+
+    <resultMap type="MsArticleBody" id="MsArticleBodyResult">
+        <result property="id"    column="sub_id"    />
+        <result property="content"    column="sub_content"    />
+        <result property="contentHtml"    column="sub_content_html"    />
+        <result property="articleId"    column="sub_article_id"    />
+    </resultMap>
+
+    <sql id="selectMsArticleVo">
+        select id, comment_counts, create_date, summary, title, view_counts, weight, author_id, body_id, category_id from ms_article
+    </sql>
+
+    <select id="selectMsArticleList" parameterType="MsArticle" resultMap="MsArticleResult">
+        <include refid="selectMsArticleVo"/>
+        <where>  
+            <if test="id != null "> and id = #{id}</if>
+            <if test="commentCounts != null "> and comment_counts = #{commentCounts}</if>
+            <if test="createDate != null "> and create_date = #{createDate}</if>
+            <if test="summary != null  and summary != ''"> and summary = #{summary}</if>
+            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="viewCounts != null "> and view_counts = #{viewCounts}</if>
+            <if test="weight != null "> and weight = #{weight}</if>
+            <if test="authorId != null "> and author_id = #{authorId}</if>
+            <if test="bodyId != null "> and body_id = #{bodyId}</if>
+            <if test="categoryId != null "> and category_id = #{categoryId}</if>
+        </where>
+    </select>
+    
+    <select id="selectMsArticleById" parameterType="Long" resultMap="MsArticleMsArticleBodyResult">
+        select a.id, a.comment_counts, a.create_date, a.summary, a.title, a.view_counts, a.weight, a.author_id, a.body_id, a.category_id,
+ b.id as sub_id, b.content as sub_content, b.content_html as sub_content_html, b.article_id as sub_article_id
+        from ms_article a
+        left join ms_article_body b on b.article_id = a.id
+        where a.id = #{id}
+    </select>
+        
+    <insert id="insertMsArticle" parameterType="MsArticle" useGeneratedKeys="true" keyProperty="id">
+        insert into ms_article
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="commentCounts != null">comment_counts,</if>
+            <if test="createDate != null">create_date,</if>
+            <if test="summary != null">summary,</if>
+            <if test="title != null">title,</if>
+            <if test="viewCounts != null">view_counts,</if>
+            <if test="weight != null">weight,</if>
+            <if test="authorId != null">author_id,</if>
+            <if test="bodyId != null">body_id,</if>
+            <if test="categoryId != null">category_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="commentCounts != null">#{commentCounts},</if>
+            <if test="createDate != null">#{createDate},</if>
+            <if test="summary != null">#{summary},</if>
+            <if test="title != null">#{title},</if>
+            <if test="viewCounts != null">#{viewCounts},</if>
+            <if test="weight != null">#{weight},</if>
+            <if test="authorId != null">#{authorId},</if>
+            <if test="bodyId != null">#{bodyId},</if>
+            <if test="categoryId != null">#{categoryId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMsArticle" parameterType="MsArticle">
+        update ms_article
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="commentCounts != null">comment_counts = #{commentCounts},</if>
+            <if test="createDate != null">create_date = #{createDate},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="viewCounts != null">view_counts = #{viewCounts},</if>
+            <if test="weight != null">weight = #{weight},</if>
+            <if test="authorId != null">author_id = #{authorId},</if>
+            <if test="bodyId != null">body_id = #{bodyId},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMsArticleById" parameterType="Long">
+        delete from ms_article where id = #{id}
+    </delete>
+
+    <delete id="deleteMsArticleByIds" parameterType="String">
+        delete from ms_article where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteMsArticleBodyByArticleIds" parameterType="String">
+        delete from ms_article_body where article_id in 
+        <foreach item="articleId" collection="array" open="(" separator="," close=")">
+            #{articleId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteMsArticleBodyByArticleId" parameterType="Long">
+        delete from ms_article_body where article_id = #{articleId}
+    </delete>
+
+    <insert id="batchMsArticleBody" useGeneratedKeys="true" keyProperty="id">
+        insert into ms_article_body( id, content, content_html, article_id) values
+		<foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.id}, #{item.content}, #{item.contentHtml}, #{item.articleId})
+        </foreach>
+    </insert>
+
+</mapper>
